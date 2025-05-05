@@ -18,7 +18,7 @@ A demo application showcasing the integration with Parafin's API for managing ca
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone hhttps://github.com/ojusave/parafin_demo.git
 cd parafin-demo
 ```
 
