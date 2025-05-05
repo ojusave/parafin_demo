@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parafin Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .demo-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        #noOffer {
+            background-color: #f44336;
+            color: white;
+        }
+        #createOffer {
+            background-color: #4CAF50;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .content-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+        .left-section {
+            flex: 2;
+        }
+        .right-section {
+            flex: 1;
+        }
+        #result {
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        #offer-frame {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Parafin Demo</h1>
+        </div>
+
+        <div class="demo-section">
+            <h2>Offers</h2>
+            <div class="content-wrapper">
+                <div class="left-section">
+                    <div class="button-group">
+                        <button id="noOffer" onclick="noOffer()">No Offer</button>
+                        <button id="createOffer" onclick="createOffer()">Create Offer</button>
+                    </div>
+                    <iframe id="offer-frame" sandbox="allow-same-origin allow-scripts allow-forms allow-popups" style="width: 100%; height: 600px; border: 1px solid #ddd; border-radius: 4px;"></iframe>
+                </div>
+                <div class="right-section">
+                    <div id="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0,
+                    v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+        function showResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.style.display = 'block';
+            resultDiv.className = isError ? 'error' : 'success';
+        }
+
+        async function makeApiCall(endpoint) {
+            const businessId = generateUUID();
+            const payload = {
+                capital_product_offer: {
+                    max_offer_amount: "30000",
+                    product_type: "merchant_cash_advance",
+                    include_fee_discount: false
+                },
+                person: {
+                    address: {
+                        city: "San Francisco",
+                        country: "US",
+                        state: "CA",
+                        postal_code: "94105",
+                        line1: "301 Howard St"
+                    },
+                    contact_email: "e.leroy@cornergas.com",
+                    contact_phone: "6502228888",
+                    first_name: "Oscar",
+                    last_name: "Leroy"
+                },
+                business: {
+                    address: {
+                        city: "San Francisco",
+                        country: "US",
+                        state: "CA",
+                        postal_code: "94105",
+                        line1: "301 Howard St"
+                    },
+                    business_external_id: businessId,
+                    dba_name: "cornergas",
+                    established_date: "2022-10-10",
+                    incorporation_state: "CA",
+                    incorporation_type: "corporation",
+                    legal_name: "Corner Gas Inc",
+                    mcc: "5541"
+                },
+                bank_account: {
+                    account_number: {
+                        last4: "5678"
+                    },
+                    routing_number: "021000021",
+                    currency: "USD",
+                    is_verified: true
+                }
+            };
+
+            try {
+                const response = await fetch(`/api/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const responseData = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(JSON.stringify(responseData, null, 2));
+                }
+
+                showResult(JSON.stringify(responseData, null, 2));
+                
+                // Check for offer_url in both possible locations
+                const offerUrl = responseData.offer_url || (responseData.capital_product_offer && responseData.capital_product_offer.offer_url);
+                if (offerUrl) {
+                    const iframe = document.getElementById('offer-frame');
+                    iframe.src = offerUrl;
+                    iframe.style.display = 'block';
+                }
+            } catch (error) {
+                showResult(`Error: ${error.message}`, true);
+            }
+        }
+
+        function createOffer() {
+            makeApiCall('create-offer');
+        }
+
+        function noOffer() {
+            makeApiCall('close-offer');
+        }
+    </script>
+</body>
+</html> 
