@@ -6,8 +6,7 @@ A demo application showcasing the integration with Parafin's API for managing ca
 
 - Create and manage capital product offers
 - View offer details and status
-- Interactive demo interface
-- Real-time API request/response display
+
 
 ## Prerequisites
 
