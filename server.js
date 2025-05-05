@@ -2,13 +2,15 @@ const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
 const path = require('path');
+require('dotenv').config();
+
 const app = express();
 const port = 3000;
 
 // Parafin API configuration
-const PARAFIN_API_URL = 'https://api.parafin.com/v1';
-const CLIENT_ID = 'f62ecb32-f9a5-48eb-a96f-4f28e5bcf194';
-const CLIENT_SECRET = 'sandbox_o9BQc91d9zhIYzDu0gE1Xx55wWSr5JjQ4nWSeG5Kebg6bhfHUl8J2slp7uSOkKzR';
+const PARAFIN_API_URL = process.env.PARAFIN_API_URL;
+const CLIENT_ID = process.env.PARAFIN_CLIENT_ID;
+const CLIENT_SECRET = process.env.PARAFIN_CLIENT_SECRET;
 
 // Middleware
 app.use(cors());
@@ -18,10 +20,10 @@ app.use(express.static('public'));
 // Create a business
 app.post('/api/create-business', async (req, res) => {
     try {
-        const response = await axios.post('https://api.parafin.com/v1/businesses', req.body, {
+        const response = await axios.post(`${PARAFIN_API_URL}/businesses`, req.body, {
             auth: {
-                username: 'f62ecb32-f9a5-48eb-a96f-4f28e5bcf194',
-                password: 'sandbox_o9BQc91d9zhIYzDu0gE1Xx55wWSr5JjQ4nWSeG5Kebg6bhfHUl8J2slp7uSOkKzR'
+                username: CLIENT_ID,
+                password: CLIENT_SECRET
             }
         });
         res.json(response.data);
@@ -34,10 +36,10 @@ app.post('/api/create-business', async (req, res) => {
 // Get businesses
 app.get('/api/businesses', async (req, res) => {
     try {
-        const response = await axios.get('https://api.parafin.com/v1/businesses', {
+        const response = await axios.get(`${PARAFIN_API_URL}/businesses`, {
             auth: {
-                username: 'f62ecb32-f9a5-48eb-a96f-4f28e5bcf194',
-                password: 'sandbox_o9BQc91d9zhIYzDu0gE1Xx55wWSr5JjQ4nWSeG5Kebg6bhfHUl8J2slp7uSOkKzR'
+                username: CLIENT_ID,
+                password: CLIENT_SECRET
             }
         });
         res.json(response.data);
@@ -128,7 +130,7 @@ async function closeOffer(business_external_id) {
 app.post('/api/create-offer', async (req, res) => {
     try {
         const { business_external_id } = req.body;
-        const response = await axios.post('https://api.parafin.com/v1/sandbox/generate_event/capital_product_offer/created', {
+        const response = await axios.post(`${PARAFIN_API_URL}/sandbox/generate_event/capital_product_offer/created`, {
             capital_product_offer: {
                 max_offer_amount: "30000",
                 product_type: "merchant_cash_advance",
@@ -173,8 +175,8 @@ app.post('/api/create-offer', async (req, res) => {
             }
         }, {
             auth: {
-                username: 'f62ecb32-f9a5-48eb-a96f-4f28e5bcf194',
-                password: 'sandbox_o9BQc91d9zhIYzDu0gE1Xx55wWSr5JjQ4nWSeG5Kebg6bhfHUl8J2slp7uSOkKzR'
+                username: CLIENT_ID,
+                password: CLIENT_SECRET
             }
         });
         res.json(response.data);
@@ -187,12 +189,12 @@ app.post('/api/create-offer', async (req, res) => {
 app.post('/api/close-offer', async (req, res) => {
     try {
         const { business_external_id } = req.body;
-        const response = await axios.post('https://api.parafin.com/v1/sandbox/generate_event/capital_product_offer/closed', {
+        const response = await axios.post(`${PARAFIN_API_URL}/sandbox/generate_event/capital_product_offer/closed`, {
             business_external_id: business_external_id
         }, {
             auth: {
-                username: 'f62ecb32-f9a5-48eb-a96f-4f28e5bcf194',
-                password: 'sandbox_o9BQc91d9zhIYzDu0gE1Xx55wWSr5JjQ4nWSeG5Kebg6bhfHUl8J2slp7uSOkKzR'
+                username: CLIENT_ID,
+                password: CLIENT_SECRET
             }
         });
         res.json(response.data);
